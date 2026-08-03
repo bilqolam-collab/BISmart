@@ -1,0 +1,140 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// -----------------------------------------------------------------------------
+// USER & ADMIN
+// -----------------------------------------------------------------------------
+model Admin {
+  id        Int      @id @default(autoincrement())
+  username  String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// MASTER DATA
+// -----------------------------------------------------------------------------
+model Lembaga {
+  id           Int      @id @default(autoincrement())
+  nama         String
+  alamat       String
+  noHp         String
+  jumlahSiswa  Int      @default(0)
+  
+  // Capaian (disimpan dalam bentuk JSON string untuk SQLite, atau relation jika Postgres)
+  // Untuk kesederhanaan di SQLite, kita simpan stringified JSON.
+  capaianData  String   @default("{}")
+
+  gurus        Guru[]
+  santris      Santri[]
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Guru {
+  id        Int      @id @default(autoincrement())
+  nama      String
+  syahadah  String
+  
+  lembagaId Int
+  lembaga   Lembaga  @relation(fields: [lembagaId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Santri {
+  id        Int      @id @default(autoincrement())
+  nama      String
+  kelas     String
+  
+  lembagaId Int
+  lembaga   Lembaga  @relation(fields: [lembagaId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Layanan {
+  id        String   @id // menggunakan string id (slug) seperti 'tahsin-juz-amma'
+  title     String
+  icon      String
+  desc      String
+  sasaran   String
+  waMessage String
+
+  materiData String   @default("[]") // Stringified JSON array of materi
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Produk {
+  id        String   @id // menggunakan string id seperti 'prod-1'
+  nama      String
+  deskripsi String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// TRANSACTIONS / PENGAJUAN
+// -----------------------------------------------------------------------------
+model Syahadah {
+  id               String   @id // SYA-1...
+  nama             String
+  noHp             String
+  namaLembaga      String
+  alamatLembaga    String
+  tingkatUjianData String   @default("[]") // Stringified JSON array
+  berkas           String   @default("")
+  status           String   @default("Proses Pengerjaan")
+
+  tanggalPengajuan DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model KitabOrder {
+  id                 String   @id // ORD-1...
+  namaLembaga        String
+  alamatLembaga      String
+  noHp               String
+  tanggalPengambilan String
+  totalHarga         Float    @default(0)
+  status             String   @default("Diproses")
+
+  itemsData          String   @default("[]") // Stringified JSON array of items
+
+  tanggalPesanan     DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// -----------------------------------------------------------------------------
+// SETTINGS
+// -----------------------------------------------------------------------------
+model ProfilWeb {
+  id         Int      @id @default(1)
+  sejarah    String
+  visi       String
+  misiData   String   @default("[]") // Stringified JSON array of misi
+  fotoUrl    String   @default("")
+  kontakData String   @default("[]") // Stringified JSON array of contacts
+
+  updatedAt  DateTime @updatedAt
+}

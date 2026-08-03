@@ -1,0 +1,150 @@
+.pembelian-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.section-title {
+  font-size: 1.25rem;
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid rgba(4, 120, 87, 0.1);
+}
+
+.add-kitab-box {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.add-kitab-box .form-control {
+  flex: 1;
+}
+
+.cart-container {
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.empty-cart {
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  color: var(--text-tertiary);
+  background-color: var(--bg-main);
+}
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cart-table th, .cart-table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.cart-table th {
+  background-color: rgba(4, 120, 87, 0.05);
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.cart-table tr:last-child td {
+  border-bottom: none;
+}
+
+.qty-control {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background-color: var(--bg-main);
+  padding: 0.25rem;
+  border-radius: var(--border-radius-full);
+  border: 1px solid var(--border-color);
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.qty-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.qty-btn:hover {
+  background-color: var(--primary-light);
+  color: white;
+  border-color: var(--primary-light);
+}
+
+.qty-value {
+  font-weight: 600;
+  min-width: 20px;
+  text-align: center;
+}
+
+.btn-delete {
+  color: #ef4444;
+  background: none;
+  padding: 0.5rem;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.btn-delete:hover {
+  background-color: #fee2e2;
+}
+
+/* Order Details Grid */
+.order-details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+
+@media (min-width: 768px) {
+  .order-details-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.invoice-box {
+  background-color: rgba(4, 120, 87, 0.05);
+  padding: 1.5rem;
+  border-radius: var(--border-radius-md);
+  border: 1px solid var(--primary-light);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: right;
+}
+
+.invoice-total {
+  font-size: 2rem;
+  color: var(--primary-color);
+  margin-top: 0.5rem;
+}
+
+.text-right {
+  text-align: right !important;
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
