@@ -29,8 +29,14 @@ app.get("/", (req, res) => {
   res.json({ status: "OK", message: "BISmart Backend Server is active!" });
 });
 
-app.get("/api/health", (req, res) => {
-  res.json({ status: "OK", message: "BISmart Backend is running!" });
+app.get("/api/health", async (req, res) => {
+  try {
+    // Check DB connection
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: "OK", dbConnected: true, message: "BISmart Backend is running and DB is connected!" });
+  } catch (error) {
+    res.status(500).json({ status: "ERROR", dbConnected: false, message: "Database connection failed", error: error.message });
+  }
 });
 
 if (process.env.NODE_ENV !== "production") {

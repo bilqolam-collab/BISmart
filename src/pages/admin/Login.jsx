@@ -9,9 +9,26 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [dbStatus, setDbStatus] = useState('checking'); // 'checking', 'connected', 'error'
   const navigate = useNavigate();
 
   React.useEffect(() => {
+    // Check DB status
+    const checkDb = async () => {
+      try {
+        const res = await fetch(import.meta.env.VITE_API_URL || (window.location.hostname === "localhost" ? "http://localhost:5000/api/health" : "/api/health"));
+        const data = await res.json();
+        if (data.dbConnected) {
+          setDbStatus('connected');
+        } else {
+          setDbStatus('error');
+        }
+      } catch (err) {
+        setDbStatus('error');
+      }
+    };
+    checkDb();
+
     // Helper untuk membuat admin default pertama kali
     api.post('/auth/init').catch(e => console.error("Init failed:", e));
   }, []);
@@ -46,6 +63,17 @@ const Login = () => {
         <div className="login-header">
           <h2>Admin Login</h2>
           <p>Sistem Informasi BISmart</p>
+          
+          {/* Status Database */}
+          <div style={{ marginTop: '10px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+            <span style={{
+              width: '8px', height: '8px', borderRadius: '50%',
+              backgroundColor: dbStatus === 'connected' ? '#10B981' : dbStatus === 'error' ? '#EF4444' : '#F59E0B'
+            }}></span>
+            <span style={{ color: '#666' }}>
+              Database: {dbStatus === 'connected' ? 'Terhubung (Online)' : dbStatus === 'error' ? 'Gagal Terhubung' : 'Memeriksa...'}
+            </span>
+          </div>
         </div>
         
         {error && <div className="login-error">{error}</div>}
