@@ -30,6 +30,20 @@ exports.login = async (req, res) => {
   const { username, password } = req.body;
 
   try {
+    // Auto-seed default admin account if database is empty (e.g., fresh Supabase setup)
+    const adminCount = await prisma.admin.count();
+    if (adminCount === 0) {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash("admin123", salt);
+      await prisma.admin.create({
+        data: {
+          username: "admin",
+          password: hashedPassword,
+          name: "Administrator"
+        }
+      });
+    }
+
     // Cek user
     const admin = await prisma.admin.findUnique({ where: { username } });
     if (!admin) {
