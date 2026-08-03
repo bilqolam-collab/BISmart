@@ -34,7 +34,7 @@ const Login = () => {
       navigate('/admin/dashboard');
     } catch (err) {
       console.error(err);
-      setError('Username atau Password salah');
+      setError(err.message || 'Username atau Password salah');
     } finally {
       setLoading(false);
     }
