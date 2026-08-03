@@ -66,16 +66,20 @@ export const AppProvider = ({ children }) => {
         alert(`⚠️ Laporan Pengambilan Data:\n\n✅ Berhasil: ${successNames || 'Tidak ada'}\n❌ Gagal/Kosong: ${failedNames}\n\nData yang gagal karena sibuknya server tidak akan merusak simpanan Anda. Silakan muat ulang (refresh) halaman ini.`);
       }
 
-      const [profil, layanan, produk, syahadah, orders, lembaga, guru, santri] = results.map(r => r.data);
+      // Convert results array to object for safe extraction
+      const dataMap = {};
+      results.forEach(r => {
+        dataMap[r.name] = r.data;
+      });
 
-      if (profil) setProfilWebData(profil);
-      if (layanan) setLayananList(layanan);
-      if (produk) setProdukList(produk);
-      if (syahadah) setSyahadahList(syahadah);
-      if (orders) setKitabOrders(orders);
-      if (lembaga) setDataLembaga(lembaga);
-      if (guru) setDataGuru(guru);
-      if (santri) setDataSantri(santri);
+      if (dataMap['Profil']) setProfilWebData(dataMap['Profil']);
+      if (dataMap['Layanan']) setLayananList(dataMap['Layanan']);
+      if (dataMap['Produk']) setProdukList(dataMap['Produk']);
+      if (dataMap['Syahadah']) setSyahadahList(dataMap['Syahadah']);
+      if (dataMap['Pesanan']) setKitabOrders(dataMap['Pesanan']);
+      if (dataMap['Lembaga']) setDataLembaga(dataMap['Lembaga']);
+      if (dataMap['Guru']) setDataGuru(dataMap['Guru']);
+      if (dataMap['Santri']) setDataSantri(dataMap['Santri']);
     } catch (err) {
       console.error("Failed to fetch data", err);
     }
