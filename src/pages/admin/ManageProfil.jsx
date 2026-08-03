@@ -13,6 +13,7 @@ const ManageProfil = () => {
     fotoUrl: '',
     kontakWa: []
   });
+  const [saving, setSaving] = useState(false);
   
   const fileInputRef = useRef(null);
 
@@ -61,21 +62,35 @@ const ManageProfil = () => {
     }
   };
 
-  const handleSave = () => {
-    const dataToSave = {
-      ...formData,
-      misi: formData.misi.split('\n').filter(m => m.trim() !== '') // split by newline back to array
-    };
-    updateProfilWebData(dataToSave);
-    alert('Data Profil berhasil disimpan!');
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    try {
+      const dataToSave = {
+        ...formData,
+        misi: formData.misi.split('\n').filter(m => m.trim() !== '') // split by newline back to array
+      };
+      await updateProfilWebData(dataToSave);
+      alert('Data Profil berhasil disimpan!');
+    } catch (err) {
+      console.error(err);
+      alert('Gagal menyimpan data: ' + (err.message || 'Error tidak diketahui'));
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h2 className="admin-page-title" style={{ marginBottom: 0 }}>Pengaturan Profil Tampilan Pengguna</h2>
-        <button onClick={handleSave} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Save size={18} /> Simpan Perubahan
+        <button 
+          onClick={handleSave} 
+          className="btn-primary" 
+          disabled={saving}
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: saving ? 0.7 : 1, cursor: saving ? 'not-allowed' : 'pointer' }}
+        >
+          <Save size={18} /> {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
         </button>
       </div>
 

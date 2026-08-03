@@ -94,7 +94,10 @@ export const AppProvider = ({ children }) => {
     try {
       const updated = await api.put('/web/profil', newData);
       setProfilWebData(updated);
-    } catch (e) { console.error(e); }
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   };
 
   // Layanan
