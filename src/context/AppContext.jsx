@@ -22,19 +22,51 @@ export const AppProvider = ({ children }) => {
   const [dataGuru, setDataGuru] = useState([]);
   const [dataSantri, setDataSantri] = useState([]);
 
+  const fetchWithRetry = async (endpoint, retries = 3) => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await api.get(endpoint);
+      } catch (err) {
+        if (i === retries - 1) {
+          console.error(`Failed to fetch ${endpoint} after ${retries} attempts:`, err);
+          return null;
+        }
+        // Wait before retrying (exponential backoff)
+        await new Promise(res => setTimeout(res, 1000 * (i + 1)));
+      }
+    }
+  };
+
   // Fetch initial data
   const fetchData = async () => {
     try {
-      const [profil, layanan, produk, syahadah, orders, lembaga, guru, santri] = await Promise.all([
-        api.get('/web/profil').catch(() => null),
-        api.get('/services/layanan').catch(() => []),
-        api.get('/services/produk').catch(() => []),
-        api.get('/transactions/syahadah').catch(() => []),
-        api.get('/transactions/orders').catch(() => []),
-        api.get('/master/lembaga').catch(() => []),
-        api.get('/master/guru').catch(() => []),
-        api.get('/master/santri').catch(() => [])
-      ]);
+      const endpoints = [
+        { name: 'Profil', url: '/web/profil' },
+        { name: 'Layanan', url: '/services/layanan' },
+        { name: 'Produk', url: '/services/produk' },
+        { name: 'Syahadah', url: '/transactions/syahadah' },
+        { name: 'Pesanan', url: '/transactions/orders' },
+        { name: 'Lembaga', url: '/master/lembaga' },
+        { name: 'Guru', url: '/master/guru' },
+        { name: 'Santri', url: '/master/santri' }
+      ];
+
+      const results = await Promise.all(
+        endpoints.map(async (ep) => {
+          const data = await fetchWithRetry(ep.url);
+          return { name: ep.name, data };
+        })
+      );
+
+      const failed = results.filter(r => r.data === null);
+      if (failed.length > 0) {
+        const failedNames = failed.map(f => f.name).join(', ');
+        const successNames = results.filter(r => r.data !== null).map(s => s.name).join(', ');
+        
+        alert(`⚠️ Laporan Pengambilan Data:\n\n✅ Berhasil: ${successNames || 'Tidak ada'}\n❌ Gagal/Kosong: ${failedNames}\n\nData yang gagal karena sibuknya server tidak akan merusak simpanan Anda. Silakan muat ulang (refresh) halaman ini.`);
+      }
+
+      const [profil, layanan, produk, syahadah, orders, lembaga, guru, santri] = results.map(r => r.data);
 
       if (profil) setProfilWebData(profil);
       if (layanan) setLayananList(layanan);
