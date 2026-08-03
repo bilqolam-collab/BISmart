@@ -1,8 +1,18 @@
 let app;
+let initError = null;
 try {
   app = require("../backend/index.js");
 } catch (err) {
-  app = require("express")();
-  app.all("*", (req, res) => res.status(500).json({ error: "Init failed", details: err.message, stack: err.stack }));
+  initError = err;
 }
-module.exports = app;
+
+module.exports = (req, res) => {
+  if (initError) {
+    return res.status(500).json({ 
+      error: "Init failed", 
+      details: initError.message, 
+      stack: initError.stack 
+    });
+  }
+  return app(req, res);
+};
