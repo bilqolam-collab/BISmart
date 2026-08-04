@@ -4,14 +4,17 @@
 }
 
 @media print {
-
   /* Hide everything else */
   body * {
     visibility: hidden;
   }
 
   /* Show print area */
-  .print-area,
+  .print-area {
+    display: block !important;
+    visibility: visible;
+  }
+
   .print-area * {
     visibility: visible;
   }
