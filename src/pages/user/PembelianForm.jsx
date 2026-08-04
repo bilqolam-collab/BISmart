@@ -4,17 +4,11 @@ import { useAppContext } from '../../context/AppContext';
 import { CheckCircle, ShoppingBag, Plus, Minus, Trash2, Clock } from 'lucide-react';
 import './Pembelian.css';
 
-const katalogKitab = [
-  'Bilqolam jilid 1', 'Bilqolam jilid 2', 'Bilqolam jilid 3', 'Bilqolam jilid 4',
-  'Pra bilqolam', 'Buku prestasi', 'Buku pendamping', 'Kitab juz amma + Tajwid',
-  'Kitab Ghorib', 'Buku Panduan Bilqolam', 'Bina Ucap', 'Mabadi Tajwid',
-  'Ensiklopedia', 'Tajwid', 'Al Quran ukuran sedang', 'Al Quran ukuran besar',
-  'Peraga Bilqolam jilid 1', 'Peraga Bilqolam jilid 2', 'Peraga Bilqolam jilid 3',
-  'Peraga Bilqolam jilid 4', 'Peraga Pra bilqolam', 'Poster latihan materi jilid'
-];
+
 
 const PembelianForm = () => {
-  const { addKitabOrder, kitabOrders } = useAppContext();
+  const { addKitabOrder, kitabOrders, profilWebData } = useAppContext();
+  const katalogKitab = profilWebData?.katalogKitab || [];
   const [formData, setFormData] = useState({
     namaLembaga: '',
     alamatLembaga: '',

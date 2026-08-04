@@ -11,7 +11,8 @@ const ManageProfil = () => {
     visi: '',
     misi: '',
     fotoUrl: '',
-    kontakWa: []
+    kontakWa: [],
+    katalogKitab: ''
   });
   const [saving, setSaving] = useState(false);
   
@@ -21,9 +22,10 @@ const ManageProfil = () => {
     setFormData({
       sejarah: profilWebData.sejarah,
       visi: profilWebData.visi,
-      misi: profilWebData.misi.join('\n'), // join with newline for textarea
+      misi: profilWebData.misi?.join('\n') || '', // join with newline for textarea
       fotoUrl: profilWebData.fotoUrl,
-      kontakWa: [...profilWebData.kontakWa]
+      kontakWa: profilWebData.kontakWa ? [...profilWebData.kontakWa] : [],
+      katalogKitab: profilWebData.katalogKitab?.join('\n') || ''
     });
   }, [profilWebData]);
 
@@ -68,7 +70,8 @@ const ManageProfil = () => {
     try {
       const dataToSave = {
         ...formData,
-        misi: formData.misi.split('\n').filter(m => m.trim() !== '') // split by newline back to array
+        misi: formData.misi.split('\n').filter(m => m.trim() !== ''), // split by newline back to array
+        katalogKitab: formData.katalogKitab.split('\n').filter(k => k.trim() !== '')
       };
       await updateProfilWebData(dataToSave);
       alert('Data Profil berhasil disimpan!');
@@ -175,6 +178,19 @@ const ManageProfil = () => {
             rows="5"
             style={{ width: '100%', resize: 'vertical' }}
             placeholder="Contoh:&#10;Misi 1...&#10;Misi 2..."
+          ></textarea>
+        </div>
+
+        <div style={{ marginBottom: '1.5rem' }}>
+          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Katalog Kitab & Perlengkapan (Pisahkan dengan baris baru / Enter)</label>
+          <textarea 
+            name="katalogKitab" 
+            value={formData.katalogKitab} 
+            onChange={handleChange} 
+            className="form-input" 
+            rows="8"
+            style={{ width: '100%', resize: 'vertical' }}
+            placeholder="Contoh:&#10;Bilqolam jilid 1&#10;Bilqolam jilid 2&#10;Buku prestasi"
           ></textarea>
         </div>
 

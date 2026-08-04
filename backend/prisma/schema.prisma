@@ -135,6 +135,7 @@ model ProfilWeb {
   misiData   String   @default("[]") // Stringified JSON array of misi
   fotoUrl    String   @default("")
   kontakData String   @default("[]") // Stringified JSON array of contacts
+  katalogKitabData String @default("[]") // Stringified JSON array of string
 
   updatedAt  DateTime @updatedAt
 }
