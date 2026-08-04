@@ -11,6 +11,7 @@ router.delete("/layanan/:id", authMiddleware, serviceController.deleteLayanan);
 
 // Produk
 router.get("/produk", serviceController.getProduk);
+router.post("/produk/bulk", authMiddleware, serviceController.createProdukBulk);
 router.post("/produk", authMiddleware, serviceController.createProduk);
 router.put("/produk/:id", authMiddleware, serviceController.updateProduk);
 router.delete("/produk/:id", authMiddleware, serviceController.deleteProduk);

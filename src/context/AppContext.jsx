@@ -139,6 +139,20 @@ export const AppProvider = ({ children }) => {
       setProdukList(produkList.filter(p => p.id !== id));
     } catch (e) { console.error(e); }
   };
+  const addBulkProduk = async (items) => {
+    try {
+      const res = await api.post('/services/produk/bulk', { items });
+      // Merging new items with existing, or just refetching all. 
+      // Safest is to refetch all products to maintain proper order and full data sync:
+      const refreshed = await fetchWithRetry('/services/produk');
+      if (refreshed) {
+        setProdukList(refreshed);
+      } else {
+        // Fallback: append new results locally
+        setProdukList([...produkList, ...res]);
+      }
+    } catch (e) { console.error(e); throw e; }
+  };
 
   // Syahadah
   const addSyahadah = async (data) => {
@@ -250,7 +264,7 @@ export const AppProvider = ({ children }) => {
       dataSantri, addSantri, updateSantri, deleteSantri, setMassSantri,
       profilWebData, updateProfilWebData,
       layananList, addLayanan, updateLayanan, deleteLayanan,
-      produkList, addProduk, updateProduk, deleteProduk,
+      produkList, addProduk, updateProduk, deleteProduk, addBulkProduk,
       fetchData // export fetch data in case we want to force refresh
     }}>
       {children}

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { Plus, Trash2, Edit2, X, Save } from 'lucide-react';
+import { Plus, Trash2, Edit2, X, Save, Upload, Download } from 'lucide-react';
+import Papa from 'papaparse';
 
 const ManageProduk = () => {
-  const { produkList, addProduk, updateProduk, deleteProduk } = useAppContext();
+  const { produkList, addProduk, updateProduk, deleteProduk, addBulkProduk } = useAppContext();
   
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduk, setEditingProduk] = useState(null);
@@ -11,6 +12,9 @@ const ManageProduk = () => {
     nama: '',
     deskripsi: ''
   });
+
+  const fileInputRef = useRef(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const handleOpenAdd = () => {
     setEditingProduk(null);
@@ -44,6 +48,59 @@ const ManageProduk = () => {
     handleCloseModal();
   };
 
+  const downloadTemplate = () => {
+    const csvContent = "id,nama,deskripsi\nprod-1,Bilqolam Jilid 1,Contoh deskripsi\nprod-2,Buku Prestasi,Contoh buku prestasi";
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", "template_produk.csv");
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    Papa.parse(file, {
+      header: true,
+      skipEmptyLines: true,
+      complete: async (results) => {
+        try {
+          const items = results.data.map(row => ({
+            id: row.id || '',
+            nama: row.nama || row.Nama || row.NAMA,
+            deskripsi: row.deskripsi || row.Deskripsi || row.DESKRIPSI || ''
+          })).filter(item => item.nama); // Must have at least 'nama'
+
+          if (items.length === 0) {
+            alert("File CSV kosong atau format tidak sesuai. Pastikan ada kolom 'nama'.");
+            setIsUploading(false);
+            return;
+          }
+
+          await addBulkProduk(items);
+          alert(`Berhasil mengupload ${items.length} produk.`);
+          setIsUploading(false);
+        } catch (err) {
+          alert("Gagal memproses file: " + err.message);
+          setIsUploading(false);
+        }
+      },
+      error: (error) => {
+        alert("Gagal membaca file: " + error.message);
+        setIsUploading(false);
+      }
+    });
+    
+    // reset input
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
   return (
     <div style={{ padding: '1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
@@ -51,9 +108,31 @@ const ManageProduk = () => {
           <h2 style={{ color: 'var(--text-primary)', marginBottom: '0.25rem' }}>Kelola Produk Bilqolam</h2>
           <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Tambah, edit, atau hapus item katalog produk Bilqolam beserta deskripsinya.</p>
         </div>
-        <button className="btn btn-primary" onClick={handleOpenAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Plus size={18} /> Tambah Produk Baru
-        </button>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="btn btn-outline" onClick={downloadTemplate} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Download size={18} /> Template CSV
+          </button>
+          
+          <input 
+            type="file" 
+            accept=".csv" 
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+          />
+          <button 
+            className="btn btn-secondary" 
+            onClick={() => fileInputRef.current.click()} 
+            disabled={isUploading}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+          >
+            <Upload size={18} /> {isUploading ? 'Mengunggah...' : 'Upload CSV'}
+          </button>
+
+          <button className="btn btn-primary" onClick={handleOpenAdd} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Plus size={18} /> Tambah Produk
+          </button>
+        </div>
       </div>
 
       <div className="glass-panel" style={{ padding: '1.5rem', overflowX: 'auto' }}>

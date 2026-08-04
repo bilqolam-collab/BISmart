@@ -81,6 +81,42 @@ exports.createProduk = async (req, res) => {
   }
 };
 
+exports.createProdukBulk = async (req, res) => {
+  try {
+    const items = req.body.items || [];
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: "Data produk tidak valid" });
+    }
+
+    const payload = items.map(item => ({
+      id: item.id || `prod-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      nama: item.nama,
+      deskripsi: item.deskripsi || ''
+    }));
+
+    // In a real app we might want to check for duplicates, 
+    // but Prisma createMany doesn't easily return the created records.
+    // Instead we will loop and upsert or just createMany and then return all
+    // Because SQLite libSQL does not support createMany fully in some configurations,
+    // we'll loop sequentially or use a transaction.
+    const createdItems = [];
+    for (const data of payload) {
+      // Upsert: if ID exists, update it, else create
+      const upserted = await prisma.produk.upsert({
+        where: { id: data.id },
+        update: { nama: data.nama, deskripsi: data.deskripsi },
+        create: { id: data.id, nama: data.nama, deskripsi: data.deskripsi }
+      });
+      createdItems.push(upserted);
+    }
+    
+    res.status(201).json(createdItems);
+  } catch (err) {
+    console.error("Bulk upload error:", err);
+    res.status(500).json({ error: err.message });
+  }
+};
+
 exports.updateProduk = async (req, res) => {
   try {
     const { id } = req.params;

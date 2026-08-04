@@ -7,25 +7,26 @@ import './Pembelian.css';
 
 
 const PembelianForm = () => {
-  const { addKitabOrder, kitabOrders, profilWebData } = useAppContext();
-  const katalogKitab = profilWebData?.katalogKitab || [];
+  const { addKitabOrder, kitabOrders, produkList } = useAppContext();
+  
   const [formData, setFormData] = useState({
     namaLembaga: '',
     alamatLembaga: '',
     noHp: '',
     tanggalPengambilan: ''
   });
-  const defaultKitabList = [
-    'Bilqolam jilid 1', 'Bilqolam jilid 2', 'Bilqolam jilid 3', 'Bilqolam jilid 4',
-    'Pra bilqolam', 'Buku prestasi', 'Buku pendamping', 'Kitab juz amma + Tajwid',
-    'Kitab Ghorib', 'Buku Panduan Bilqolam', 'Bina Ucap', 'Mabadi Tajwid',
-    'Ensiklopedia', 'Tajwid', 'Al Quran ukuran sedang', 'Al Quran ukuran besar',
-    'Peraga Bilqolam jilid 1', 'Peraga Bilqolam jilid 2', 'Peraga Bilqolam jilid 3',
-    'Peraga Bilqolam jilid 4', 'Peraga Pra bilqolam', 'Poster latihan materi jilid'
-  ];
 
-  // Gunakan katalogKitab dari profil jika ada, kalau kosong gunakan default
-  const activeKatalog = (katalogKitab && katalogKitab.length > 0) ? katalogKitab : defaultKitabList;
+  // Gunakan produkList dari context (dari kelola produk)
+  const activeKatalog = (produkList && produkList.length > 0) 
+    ? produkList.map(p => p.nama) 
+    : [
+        'Bilqolam jilid 1', 'Bilqolam jilid 2', 'Bilqolam jilid 3', 'Bilqolam jilid 4',
+        'Pra bilqolam', 'Buku prestasi', 'Buku pendamping', 'Kitab juz amma + Tajwid',
+        'Kitab Ghorib', 'Buku Panduan Bilqolam', 'Bina Ucap', 'Mabadi Tajwid',
+        'Ensiklopedia', 'Tajwid', 'Al Quran ukuran sedang', 'Al Quran ukuran besar',
+        'Peraga Bilqolam jilid 1', 'Peraga Bilqolam jilid 2', 'Peraga Bilqolam jilid 3',
+        'Peraga Bilqolam jilid 4', 'Peraga Pra bilqolam', 'Poster latihan materi jilid'
+      ];
 
   // Inisialisasi state pesanan langsung dari activeKatalog
   const [pesanan, setPesanan] = useState(
@@ -39,13 +40,14 @@ const PembelianForm = () => {
 
   // Jika data dari API baru masuk, perbarui list
   React.useEffect(() => {
-    if (katalogKitab && katalogKitab.length > 0) {
+    if (produkList && produkList.length > 0) {
       setPesanan(prev => {
         // Ambil nama item yang sudah ada qty-nya untuk dipertahankan
         const existingPesanan = prev.filter(p => p.qty > 0);
         
-        // Buat list baru dari katalog terkini
-        const newPesanan = katalogKitab.map((nama, idx) => {
+        // Buat list baru dari katalog terkini (mengambil nama dari produkList)
+        const newPesanan = produkList.map((prod, idx) => {
+          const nama = prod.nama;
           const exists = existingPesanan.find(p => p.nama === nama);
           if (exists) return exists;
           return { id: `kitab-${idx}`, nama, qty: 0, hargaSatuan: 0 };
@@ -60,7 +62,7 @@ const PembelianForm = () => {
         return newPesanan;
       });
     }
-  }, [katalogKitab]);
+  }, [produkList]);
   const [selectedKitab, setSelectedKitab] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
