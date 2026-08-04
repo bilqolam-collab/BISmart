@@ -15,16 +15,52 @@ const PembelianForm = () => {
     noHp: '',
     tanggalPengambilan: ''
   });
-  const defaultItems = [
-    { id: 'def-1', nama: 'Bilqolam jilid 1', qty: 0, hargaSatuan: 0 },
-    { id: 'def-2', nama: 'Bilqolam jilid 2', qty: 0, hargaSatuan: 0 },
-    { id: 'def-3', nama: 'Bilqolam jilid 3', qty: 0, hargaSatuan: 0 },
-    { id: 'def-4', nama: 'Bilqolam jilid 4', qty: 0, hargaSatuan: 0 },
-    { id: 'def-5', nama: 'Buku prestasi', qty: 0, hargaSatuan: 0 },
-    { id: 'def-6', nama: 'Kitab juz amma + Tajwid', qty: 0, hargaSatuan: 0 }
+  const defaultKitabList = [
+    'Bilqolam jilid 1', 'Bilqolam jilid 2', 'Bilqolam jilid 3', 'Bilqolam jilid 4',
+    'Pra bilqolam', 'Buku prestasi', 'Buku pendamping', 'Kitab juz amma + Tajwid',
+    'Kitab Ghorib', 'Buku Panduan Bilqolam', 'Bina Ucap', 'Mabadi Tajwid',
+    'Ensiklopedia', 'Tajwid', 'Al Quran ukuran sedang', 'Al Quran ukuran besar',
+    'Peraga Bilqolam jilid 1', 'Peraga Bilqolam jilid 2', 'Peraga Bilqolam jilid 3',
+    'Peraga Bilqolam jilid 4', 'Peraga Pra bilqolam', 'Poster latihan materi jilid'
   ];
-  
-  const [pesanan, setPesanan] = useState(defaultItems);
+
+  // Gunakan katalogKitab dari profil jika ada, kalau kosong gunakan default
+  const activeKatalog = (katalogKitab && katalogKitab.length > 0) ? katalogKitab : defaultKitabList;
+
+  // Inisialisasi state pesanan langsung dari activeKatalog
+  const [pesanan, setPesanan] = useState(
+    activeKatalog.map((nama, idx) => ({
+      id: `kitab-${idx}`,
+      nama: nama,
+      qty: 0,
+      hargaSatuan: 0
+    }))
+  );
+
+  // Jika data dari API baru masuk, perbarui list
+  React.useEffect(() => {
+    if (katalogKitab && katalogKitab.length > 0) {
+      setPesanan(prev => {
+        // Ambil nama item yang sudah ada qty-nya untuk dipertahankan
+        const existingPesanan = prev.filter(p => p.qty > 0);
+        
+        // Buat list baru dari katalog terkini
+        const newPesanan = katalogKitab.map((nama, idx) => {
+          const exists = existingPesanan.find(p => p.nama === nama);
+          if (exists) return exists;
+          return { id: `kitab-${idx}`, nama, qty: 0, hargaSatuan: 0 };
+        });
+
+        // Tambahkan item yang mungkin sudah dihapus dari katalog tapi ada qty-nya di pesanan saat ini (opsional)
+        const newNames = newPesanan.map(p => p.nama);
+        existingPesanan.forEach(p => {
+          if (!newNames.includes(p.nama)) newPesanan.push(p);
+        });
+
+        return newPesanan;
+      });
+    }
+  }, [katalogKitab]);
   const [selectedKitab, setSelectedKitab] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -36,18 +72,7 @@ const PembelianForm = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddKitab = () => {
-    if (!selectedKitab) return;
-    
-    // Check if already exists
-    if (pesanan.some(p => p.nama === selectedKitab)) {
-      alert('Kitab ini sudah ada dalam daftar pesanan Anda.');
-      return;
-    }
 
-    setPesanan([...pesanan, { id: Date.now(), nama: selectedKitab, qty: 1, hargaSatuan: 0 }]);
-    setSelectedKitab('');
-  };
 
   const handleUpdateQty = (id, delta) => {
     setPesanan(pesanan.map(item => {
@@ -59,9 +84,7 @@ const PembelianForm = () => {
     }));
   };
 
-  const handleRemoveKitab = (id) => {
-    setPesanan(pesanan.filter(item => item.id !== id));
-  };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -164,21 +187,7 @@ const PembelianForm = () => {
           {/* Daftar Pesanan */}
           <h3 className="section-title mt-6">Daftar Pesanan Kitab</h3>
           
-          <div className="add-kitab-box">
-            <select 
-              className="form-control" 
-              value={selectedKitab} 
-              onChange={(e) => setSelectedKitab(e.target.value)}
-            >
-              <option value="">-- Pilih Kitab / Item --</option>
-              {katalogKitab.map((kitab, idx) => (
-                <option key={idx} value={kitab}>{kitab}</option>
-              ))}
-            </select>
-            <button type="button" className="btn btn-secondary" onClick={handleAddKitab}>
-              Tambah
-            </button>
-          </div>
+
 
           <div className="cart-container mt-4">
             {pesanan.length === 0 ? (
@@ -209,7 +218,7 @@ const PembelianForm = () => {
                         </div>
                       </td>
                       <td className="text-center">
-                        <button type="button" className="btn-delete" onClick={() => handleRemoveKitab(item.id)}>
+                        <button type="button" className="btn-delete" onClick={() => handleUpdateQty(item.id, -item.qty)}>
                           <Trash2 size={18} />
                         </button>
                       </td>
