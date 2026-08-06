@@ -36,7 +36,7 @@ exports.updateSyahadahStatus = async (req, res) => {
       where: { id },
       data: { status }
     });
-    res.json(updated);
+    res.json({ ...updated, tingkatUjian: JSON.parse(updated.tingkatUjianData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -82,7 +82,7 @@ exports.updateOrderStatus = async (req, res) => {
       where: { id },
       data: { status }
     });
-    res.json(updated);
+    res.json({ ...updated, items: JSON.parse(updated.itemsData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
