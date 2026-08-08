@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAppContext } from '../../context/AppContext';
-import { Edit2, Printer, X, Save } from 'lucide-react';
+import { Edit2, Printer, X, Save, Share2 } from 'lucide-react';
+import html2pdf from 'html2pdf.js';
 import './Admin.css';
 import './Print.css';
 
@@ -30,16 +31,55 @@ const ManagePembelian = () => {
     setEditingOrder(null);
   };
 
+  const generatePDFOptions = (orderId) => ({
+    margin:       [0.5, 0.5, 0.5, 0.5],
+    filename:     `Struk_Pesanan_${orderId}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
+  });
+
   const handlePrint = (order) => {
     setPrintData(order);
     setTimeout(() => {
-      window.print();
-      setPrintData(null);
-    }, 300);
+      const element = document.querySelector('.print-area');
+      html2pdf().set(generatePDFOptions(order.id)).from(element).save().then(() => {
+        setPrintData(null);
+      });
+    }, 500); // give time for the DOM to render images
   };
 
   const formatRupiah = (angka) => {
     return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(angka);
+  };
+
+  const handleShareWhatsApp = (order) => {
+    setPrintData(order);
+    setTimeout(async () => {
+      const element = document.querySelector('.print-area');
+      try {
+        const pdfBlob = await html2pdf().set(generatePDFOptions(order.id)).from(element).output('blob');
+        const file = new File([pdfBlob], `Struk_Pesanan_${order.id}.pdf`, { type: 'application/pdf' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: 'Struk Pembelian Bilqolam',
+            text: `Berikut adalah struk pesanan kitab untuk ${order.namaLembaga}`,
+            files: [file]
+          });
+        } else {
+          // Fallback if browser doesn't support file sharing
+          const waText = encodeURIComponent(`*STRUK PESANAN KITAB BILQOLAM*\n\nID: ${order.id}\nNama Pemesan: ${order.namaLembaga}\nTotal Tagihan: ${formatRupiah(order.totalHarga)}\nStatus: ${order.status}\n\nTerima kasih atas pesanan Anda.`);
+          const waNumber = order.noHp.replace(/\D/g, '');
+          const waUrl = waNumber.startsWith('62') || waNumber.startsWith('+') ? `https://wa.me/${waNumber.replace('+', '')}?text=${waText}` : `https://wa.me/62${waNumber.replace(/^0/, '')}?text=${waText}`;
+          window.open(waUrl, '_blank');
+        }
+      } catch (err) {
+        console.error("Share failed", err);
+      } finally {
+        setPrintData(null);
+      }
+    }, 500);
   };
 
   return (
@@ -93,8 +133,11 @@ const ManagePembelian = () => {
                         <button className="btn-icon" title="Edit Harga" onClick={() => handleEditPrices(order)}>
                           <Edit2 size={18} />
                         </button>
-                        <button className="btn-icon" title="Cetak Struk" onClick={() => handlePrint(order)}>
+                        <button className="btn-icon" title="Download PDF" onClick={() => handlePrint(order)}>
                           <Printer size={18} />
+                        </button>
+                        <button className="btn-icon text-success" title="Kirim WA" onClick={() => handleShareWhatsApp(order)}>
+                          <Share2 size={18} color="#25D366" />
                         </button>
                       </div>
                     </td>
