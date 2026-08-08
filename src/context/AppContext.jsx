@@ -181,7 +181,10 @@ export const AppProvider = ({ children }) => {
     try {
       const res = await api.put(`/transactions/orders/${id}/status`, { status: newStatus });
       setKitabOrders(prev => prev.map(item => item.id === id ? res : item));
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e);
+      alert("Gagal merubah status: " + e.message); 
+    }
   };
   const updateKitabPrices = async (orderId, updatedItems) => {
     try {

@@ -8,11 +8,20 @@ const getHeaders = () => {
   };
 };
 
+const handleResponse = async (res) => {
+  if (res.status === 401) {
+    localStorage.removeItem("bismart_token");
+    window.location.href = "/admin/login";
+    throw new Error("Sesi login Anda telah berakhir (expired). Silakan login kembali.");
+  }
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+};
+
 export const api = {
   get: async (endpoint) => {
     const res = await fetch(`${BASE_URL}${endpoint}`, { headers: getHeaders() });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   },
   post: async (endpoint, data) => {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -20,8 +29,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(data)
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   },
   put: async (endpoint, data) => {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -29,8 +37,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(data)
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   },
   delete: async (endpoint, data) => {
     const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -38,7 +45,6 @@ export const api = {
       headers: getHeaders(),
       body: data ? JSON.stringify(data) : undefined
     });
-    if (!res.ok) throw new Error(await res.text());
-    return res.json();
+    return handleResponse(res);
   }
 };
