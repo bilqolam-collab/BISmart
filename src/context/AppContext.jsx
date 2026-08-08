@@ -165,7 +165,7 @@ export const AppProvider = ({ children }) => {
   const updateSyahadahStatus = async (id, newStatus) => {
     try {
       const res = await api.put(`/transactions/syahadah/${id}/status`, { status: newStatus });
-      setSyahadahList(syahadahList.map(item => item.id === id ? res : item));
+      setSyahadahList(prev => prev.map(item => item.id === id ? res : item));
     } catch (e) { console.error(e); }
   };
 
@@ -180,7 +180,7 @@ export const AppProvider = ({ children }) => {
   const updateKitabOrderStatus = async (id, newStatus) => {
     try {
       const res = await api.put(`/transactions/orders/${id}/status`, { status: newStatus });
-      setKitabOrders(kitabOrders.map(item => item.id === id ? res : item));
+      setKitabOrders(prev => prev.map(item => item.id === id ? res : item));
     } catch (e) { console.error(e); }
   };
   const updateKitabPrices = async (orderId, updatedItems) => {

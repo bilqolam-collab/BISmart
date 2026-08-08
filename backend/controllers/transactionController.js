@@ -1,12 +1,23 @@
 const prisma = require("../prismaClient");
 
+const safeParseJSON = (str, fallback = []) => {
+  if (!str) return fallback;
+  if (typeof str !== 'string') return str; // just in case Prisma already parsed it
+  try {
+    return JSON.parse(str);
+  } catch (err) {
+    console.error("JSON parse error on:", str);
+    return fallback;
+  }
+};
+
 // ==========================================
 // SYAHADAH
 // ==========================================
 exports.getSyahadah = async (req, res) => {
   try {
     const data = await prisma.syahadah.findMany({ orderBy: { tanggalPengajuan: 'desc' } });
-    res.json(data.map(item => ({ ...item, tingkatUjian: JSON.parse(item.tingkatUjianData) })));
+    res.json(data.map(item => ({ ...item, tingkatUjian: safeParseJSON(item.tingkatUjianData) })));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -22,7 +33,7 @@ exports.createSyahadah = async (req, res) => {
         tingkatUjianData: JSON.stringify(tingkatUjian || [])
       }
     });
-    res.status(201).json({ ...newData, tingkatUjian: JSON.parse(newData.tingkatUjianData) });
+    res.status(201).json({ ...newData, tingkatUjian: safeParseJSON(newData.tingkatUjianData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -36,7 +47,7 @@ exports.updateSyahadahStatus = async (req, res) => {
       where: { id },
       data: { status }
     });
-    res.json({ ...updated, tingkatUjian: JSON.parse(updated.tingkatUjianData) });
+    res.json({ ...updated, tingkatUjian: safeParseJSON(updated.tingkatUjianData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -48,7 +59,7 @@ exports.updateSyahadahStatus = async (req, res) => {
 exports.getOrders = async (req, res) => {
   try {
     const data = await prisma.kitabOrder.findMany({ orderBy: { tanggalPesanan: 'desc' } });
-    res.json(data.map(item => ({ ...item, items: JSON.parse(item.itemsData) })));
+    res.json(data.map(item => ({ ...item, items: safeParseJSON(item.itemsData) })));
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -68,7 +79,7 @@ exports.createOrder = async (req, res) => {
         itemsData: JSON.stringify(items || [])
       }
     });
-    res.status(201).json({ ...newData, items: JSON.parse(newData.itemsData) });
+    res.status(201).json({ ...newData, items: safeParseJSON(newData.itemsData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -82,7 +93,7 @@ exports.updateOrderStatus = async (req, res) => {
       where: { id },
       data: { status }
     });
-    res.json({ ...updated, items: JSON.parse(updated.itemsData) });
+    res.json({ ...updated, items: safeParseJSON(updated.itemsData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -101,7 +112,7 @@ exports.updateOrderPrices = async (req, res) => {
         itemsData: JSON.stringify(items)
       }
     });
-    res.json({ ...updated, items: JSON.parse(updated.itemsData) });
+    res.json({ ...updated, items: safeParseJSON(updated.itemsData) });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
